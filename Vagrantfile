@@ -14,6 +14,10 @@ Vagrant.configure("2") do |config|
     node.vm.network "private_network", ip: "10.200.0.11"
   end
 
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "10.200.0.10 hub" >> /etc/hosts
+    echo "10.200.0.11 node0" >> /etc/hosts
+  SHELL
 
 
 end
