@@ -28,17 +28,18 @@
   become: true
   tasks:
     - name: Create selenium service
-      copy: /etc/systemd/system/selenium.service
-      content: |
-        [Unit]
-        Description=Selenium Server
-        After=network.target
+      copy: 
+        dest: /etc/systemd/system/selenium.service
+        content: |
+          [Unit]
+          Description=Selenium Server
+          After=network.target
 
-        [Service]
-        ExecStart=/usr/bin/java -jar /opt/selenium-server.jar hub
+          [Service]
+          ExecStart=/usr/bin/java -jar /opt/selenium-server.jar hub
 
-        [Install]
-        WantedBy=multi-user.target
+          [Install]
+          WantedBy=multi-user.target
     
     - name: Enable and start Selenium service
       systemd:
@@ -50,17 +51,18 @@
   become: true
   tasks:
     - name: Create selenium service
-      copy: /etc/systemd/system/selenium.service
-      content: |
-        [Unit]
-        Description=Selenium Server
-        After=network.target
+      copy: 
+        dest: /etc/systemd/system/selenium.service
+        content: |
+          [Unit]
+          Description=Selenium Server
+          After=network.target
 
-        [Service]
-        ExecStart=/usr/bin/java -jar /opt/selenium-server.jar node --hub http://10.200.0.10:4444
+          [Service]
+          ExecStart=/usr/bin/java -jar /opt/selenium-server.jar node --hub http://10.200.0.10:4444
 
-        [Install]
-        WantedBy=multi-user.target
+          [Install]
+          WantedBy=multi-user.target
     
     - name: Enable and start Selenium service
       systemd:
