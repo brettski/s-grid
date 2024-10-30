@@ -8,7 +8,8 @@ Vagrant.configure("2") do |config|
     hub.vm.network "forwarded_port", guest: 4444, host: 4444
     hub.vm.provision "ansible" do |ansible|
       ansible.playbook = "playbooks/selenium.yml"
-      ansible.extra_vars = { role: "hub" }
+      ansible.inventory_path= "playbooks/inventory.yml"
+      # ansible.extra_vars = { role: "hub" }
     end
   end 
 
@@ -18,7 +19,8 @@ Vagrant.configure("2") do |config|
     node.vm.network "private_network", ip: "10.200.0.11"
     node.vm.provision "ansible" do |ansible|
       ansible.playbook = "playbooks/selenium.yml"
-      ansible.extra_vars = { role: "node" }
+      ansible.inventory_path= "playbooks/inventory.yml"      
+      # ansible.extra_vars = { role: "node" }
     end
   end
 

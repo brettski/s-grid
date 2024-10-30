@@ -15,8 +15,12 @@
         mode: '0755'
     
     - name: Calculate downloaded file's hash
-      shell: "sha256sum /opt/selenium-server.jar"
+      shell: "sha256sum /opt/selenium-server.jar | awk '{ print $1 }'"
       register: calculated_checksum
+    - debug:
+        msg: "calculated: {{ calculated_checksum }}"
+    - debug:
+        msg: "calculated stdout: {{ calculated_checksum.stdout }}"
     
     - name: Validate server file hash
       assert:
@@ -27,12 +31,12 @@
 - hosts: hub
   become: true
   tasks:
-    - name: Create selenium service
+    - name: Create selenium hub service
       copy: 
-        dest: /etc/systemd/system/selenium.service
+        dest: /etc/systemd/system/selenium-hub.service
         content: |
           [Unit]
-          Description=Selenium Server
+          Description=Selenium Hub service
           After=network.target
 
           [Service]
@@ -43,19 +47,19 @@
     
     - name: Enable and start Selenium service
       systemd:
-        name: selenium
+        name: selenium-hub
         enabled: yes
         state: started
 
 - hosts: node
   become: true
   tasks:
-    - name: Create selenium service
+    - name: Create selenium node service
       copy: 
-        dest: /etc/systemd/system/selenium.service
+        dest: /etc/systemd/system/selenium-node.service
         content: |
           [Unit]
-          Description=Selenium Server
+          Description=Selenium Node service
           After=network.target
 
           [Service]
@@ -66,7 +70,7 @@
     
     - name: Enable and start Selenium service
       systemd:
-        name: selenium
+        name: selenium-node
         enabled: yes
         state: started
 
