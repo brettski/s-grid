@@ -1,0 +1,71 @@
+- hosts: all
+  become: true
+  vars:
+    server_file_hash: bde3bda5017170711e799631df978510de9176dafafb5fd2ea59b2923f654c91
+  tasks:
+    - name: Install Java 17
+      yum:
+        name: java-17-openjdk
+        state: present
+    
+    - name: Download selenium server 4.25
+      get_url:
+        url: https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.25.0/selenium-server-4.25.0.jar
+        dest: /opt/selenium-server.jar
+        mode: '0755'
+    
+    - name: Calculate downloaded file's hash
+      shell: "sha256sum /opt/selenium-server.jar"
+      register: calculated_checksum
+    
+    - name: Validate server file hash
+      assert:
+        that:
+          - calculated_checksum.stdout == server_file_hash
+        fail_msg: Downloaded file's has doesn't match expected value.
+
+- hosts: hub
+  become: true
+  tasks:
+    - name: Create selenium service
+      copy: /etc/systemd/system/selenium.service
+      content: |
+        [Unit]
+        Description=Selenium Server
+        After=network.target
+
+        [Service]
+        ExecStart=/usr/bin/java -jar /opt/selenium-server.jar hub
+
+        [Install]
+        WantedBy=multi-user.target
+    
+    - name: Enable and start Selenium service
+      systemd:
+        name: selenium
+        enabled: yes
+        state: started
+
+- hosts: node
+  become: true
+  tasks:
+    - name: Create selenium service
+      copy: /etc/systemd/system/selenium.service
+      content: |
+        [Unit]
+        Description=Selenium Server
+        After=network.target
+
+        [Service]
+        ExecStart=/usr/bin/java -jar /opt/selenium-server.jar node --hub http://10.200.0.10:4444
+
+        [Install]
+        WantedBy=multi-user.target
+    
+    - name: Enable and start Selenium service
+      systemd:
+        name: selenium
+        enabled: yes
+        state: started
+
+
