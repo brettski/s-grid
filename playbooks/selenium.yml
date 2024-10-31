@@ -28,7 +28,7 @@
           - calculated_checksum.stdout == server_file_hash
         fail_msg: Downloaded file's has doesn't match expected value.
 
-- hosts: hub
+- hosts: hubs
   become: true
   tasks:
     - name: Create selenium hub service
@@ -51,7 +51,7 @@
         enabled: yes
         state: started
 
-- hosts: nod*
+- hosts: nodes
   become: true
   tasks:
     - name: Create selenium node service

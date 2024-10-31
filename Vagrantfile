@@ -27,7 +27,7 @@ Vagrant.configure("2") do |config|
   end
 
    # Configure Ansible to run from the host
-   config.vm.provision "ansible" do |ansible|
+   config.vm.provision "ansible", type: "ansible", run: "never" do |ansible|
     ansible.playbook = "playbooks/selenium.yml"
     ansible.inventory_path = "playbooks/inventory.yml"
     ansible.limit = "all" # Ensure all hosts are included

@@ -2,10 +2,10 @@ all:
   hosts:
     hub:
       ansible_host: 172.27.0.40
-      ansible_ssh_private_key_file: .vagrant/machines/hub/virtualbox/private_key
+      ansible_ssh_private_key_file: ~/projects/s-grid/.vagrant/machines/hub/virtualbox/private_key
     node0:
       ansible_host: 172.27.0.41
-      ansible_ssh_private_key_file: .vagrant/machines/node/virtualbox/private_key
+      ansible_ssh_private_key_file: ~/projects/s-grid/.vagrant/machines/node/virtualbox/private_key
     # node1:
     #   #ansible_host: 10.200.0.12
     #   ansible_host: 172.27.0.42
