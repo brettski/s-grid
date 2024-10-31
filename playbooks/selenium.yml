@@ -51,7 +51,7 @@
         enabled: yes
         state: started
 
-- hosts: node
+- hosts: nod*
   become: true
   tasks:
     - name: Create selenium node service

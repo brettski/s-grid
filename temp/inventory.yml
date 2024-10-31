@@ -1,0 +1,15 @@
+all:
+  children:
+    hub:
+      hosts:
+        selenium-hub:
+          ansible_host: 192.168.50.10
+    nodes:
+      hosts:
+        selenium-node1:
+          ansible_host: 192.168.50.11
+        selenium-node2:
+          ansible_host: 192.168.50.12
+  vars:
+    ansible_user: vagrant
+    ansible_ssh_private_key_file: ~/.vagrant.d/insecure_private_key
