@@ -63,7 +63,7 @@
           After=network.target
 
           [Service]
-          ExecStart=/usr/bin/java -jar /opt/selenium-server.jar node --hub http://10.200.0.10:4444
+          ExecStart=/usr/bin/java -jar /opt/selenium-server.jar node --hub http://{{ hostvars['hub']['ansible_host'] }}:4444
 
           [Install]
           WantedBy=multi-user.target
