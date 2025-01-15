@@ -1,0 +1,6 @@
+[hub]
+
+[nodes]
+[[nodes.node]]
+hub = "http://172.27.0.40:4444"
+id = "node0"
