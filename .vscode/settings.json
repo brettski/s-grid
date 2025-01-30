@@ -1,5 +1,6 @@
 {
   "yaml.schemas": {
-    "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/inventory.json": "file:///Users/brettski/projects/s-grid/playbooks/inventory.yml"
+    "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/inventory.json": "**/inventory/*.yml",
+    "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/playbook.json": "**/playbooks/*.yml"
   }
 }
