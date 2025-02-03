@@ -1,0 +1,17 @@
+{
+  "name": "node-webdriver",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "brettski",
+  "license": "ISC",
+  "description": "Something to test the grid with",
+  "dependencies": {
+    "chromedriver": "^132.0.2",
+    "selenium-webdriver": "^4.28.1"
+  }
+}

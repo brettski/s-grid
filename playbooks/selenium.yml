@@ -53,7 +53,78 @@
 
 - hosts: nodes
   become: true
+  vars:
+    chrome_download_url: "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+    chromedriver_base_url: "https://chromedriver.storage.googleapis.com"
+  pre_tasks:
+    - name: Ensure required packages are installed
+      ansible.builtin.dnf:
+        name:
+          - wget
+          - unzip
+        state: present
+
   tasks:
+
+    - name: Download Google Chrome RPM
+      ansible.builtin.get_url:
+        url: "{{ chrome_download_url }}"
+        dest: "/tmp/google-chrome.rpm"
+        mode: '0644'
+    
+    - name: Install Google Chrome
+      ansible.builtin.dnf:
+        name: "/tmp/google-chrome.rpm"
+        state: present
+        disable_gpg_check: yes
+    
+    - name: Get ChromeDriver latest version
+      ansible.builtin.uri:
+        url: "{{ chromedriver_base_url }}/LATEST_RELEASE"
+        return_content: yes
+      register: chromedriver_version
+      changed_when: false
+
+    - name: Download ChromeDriver
+      ansible.builtin.get_url:
+        url: "{{ chromedriver_base_url }}/{{ chromedriver_version.content }}/chromedriver_linux64.zip"
+        dest: "/tmp/chromedriver.zip"
+        mode: '0644'
+
+    - name: Unzip ChromeDriver
+      ansible.builtin.unarchive:
+        src: "/tmp/chromedriver.zip"
+        dest: "/usr/bin/"
+        remote_src: yes
+        creates: "/usr/bin/chromedriver"
+    
+    - name: Set ChromeDriver Permissions
+      ansible.builtin.file:
+        path: "/usr/bin/chromedriver"
+        mode: '0755'
+        owner: root
+        group: root
+    
+    - name: Verify Chrome Installation
+      ansible.builtin.command: google-chrome --version
+      register: chrome_version_check
+      changed_when: false
+
+    - name: My Path
+      ansible.builtin.debug:
+        msg: "{{ ansible_env.PATH.split(':')}}"  
+
+    - name: Verify ChromeDriver Installation
+      ansible.builtin.command: chromedriver --version
+      register: chromedriver_version_check
+      changed_when: false
+    
+    - name: Install Details
+      ansible.builtin.debug:
+        msg:
+          - "Chrome version: {{ chrome_version_check }}"
+          # - "Chromedriver version: {{ chromedriver_version_check }}"
+
     - name: Create selenium node service
       copy: 
         dest: /etc/systemd/system/selenium-node.service
@@ -74,4 +145,11 @@
         enabled: yes
         state: started
 
-
+  post_tasks:
+    - name: Clean up downloaded
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/tmp/google-chrome.rpm"
+        - "/tmp/chromedriver.zip"
