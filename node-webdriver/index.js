@@ -9,6 +9,11 @@ async function run() {
 
   const options = new chrome.Options();
   options.addArguments(`user-agent=${agentString}`);
+
+  options.addArguments('--no-sandbox');
+  options.addArguments('--disable-dev-shm-usage');
+  // options.addArguments('--incognito');
+  options.addArguments('--headless');
   options.setLoggingPrefs({ browser: 'ALL' });
   const driver = await new Builder()
     .forBrowser(Browser.CHROME)
