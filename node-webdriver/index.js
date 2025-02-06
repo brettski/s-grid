@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { Builder, By, Key, until, Browser } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import sleep from './sleep.js';
@@ -28,6 +29,8 @@ async function run() {
     await sleep(Math.floor(Math.random() * (3000 - 2000 + 1)) + 2000);
     await searchBox.sendKeys(search, Key.RETURN);
     await driver.wait(until.titleIs(`${search} at DuckDuckGo`), 30000);
+    const screenshot = await driver.takeScreenshot();
+    fs.writeFileSync('screenshot.png', screenshot, 'base64');
   } catch (err) {
     console.error(`There was an error:`, err);
   } finally {

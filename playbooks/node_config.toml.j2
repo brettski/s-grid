@@ -1,0 +1,11 @@
+[node]
+detect-drivers = false
+max-sessions = 1
+hub = "http://{{ hub_ip }}:4444"
+
+[server]
+port = 5555
+
+[[node.driver-configuration]]
+display-name = "chrome"
+stereotype = '{"browserName": "chrome", "platformName": "LINUX"}'

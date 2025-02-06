@@ -3,25 +3,49 @@
   vars:
     server_file_hash: 72975a0c09135efb1f14262a05ab570dfd9c9c345840a37702c580941350ed0d
   tasks:
-    - name: Install Java 17
+    - name: Install Java 21
       yum:
-        name: java-17-openjdk
+        name: java-21-openjdk
         state: present
-    
-    - name: Download selenium server 4.28.1
-      get_url:
-        url: https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.28.0/selenium-server-4.28.1.jar
-        dest: /opt/selenium-server.jar
+
+    - name: Create Seleinum user
+      ansible.builtin.user:
+        name: selenium
+        shell: /bin/bash
+        home: /home/selenium
+
+    - name: Create Selenium directories
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: directory
+        owner: selenium
+        group: selenium
         mode: '0755'
-    
+      loop:
+        - /opt/selenium
+        - /var/log/selenium
+
+    - name: Selenium folder present
+      ansible.builtin.file:
+        path: /opt/selenium
+        state: directory
+        mode: '0755'
+
+    - name: Download selenium server 4.28.1
+      ansible.builtin.get_url:
+        url: https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.28.0/selenium-server-4.28.1.jar
+        dest: /opt/selenium/selenium-server.jar
+        force: true
+        mode: '0644'
+
     - name: Calculate downloaded file's hash
-      shell: "sha256sum /opt/selenium-server.jar | awk '{ print $1 }'"
+      shell: "sha256sum /opt/selenium/selenium-server.jar | awk '{ print $1 }'"
       register: calculated_checksum
     - debug:
-        msg: "calculated: {{ calculated_checksum }}"
-    - debug:
-        msg: "calculated stdout: {{ calculated_checksum.stdout }}"
-    
+        msg:
+          - 'calculated hash: {{ calculated_checksum.stdout }}'
+          - '  expected hash: {{ server_file_hash }}'
+
     - name: Validate server file hash
       assert:
         that:
@@ -32,7 +56,7 @@
   become: true
   tasks:
     - name: Create selenium hub service
-      copy: 
+      copy:
         dest: /etc/systemd/system/selenium-hub.service
         content: |
           [Unit]
@@ -40,11 +64,14 @@
           After=network.target
 
           [Service]
-          ExecStart=/usr/bin/java -jar /opt/selenium-server.jar hub
+          User=selenium
+          ExecStart=/usr/bin/java -jar /opt/selenium/selenium-server.jar hub
+          StandardOutput=file:/var/log/selenium/hub.log
+          StandardError=file:/var/log/selenium/hub.error.log
 
           [Install]
           WantedBy=multi-user.target
-    
+
     - name: Enable and start Selenium service
       systemd:
         name: selenium-hub
@@ -54,8 +81,9 @@
 - hosts: nodes
   become: true
   vars:
-    chrome_download_url: "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-    chromedriver_base_url: "https://storage.googleapis.com/chrome-for-testing-public"
+    chrome_download_url: 'https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm'
+    chromedriver_base_url: 'https://storage.googleapis.com/chrome-for-testing-public'
+    hub_ip: "{{ hostvars['hub']['ansible_host'] }}"
   pre_tasks:
     - name: Ensure required packages are installed
       ansible.builtin.dnf:
@@ -66,16 +94,21 @@
         state: present
 
   tasks:
+    - name: Create Selenium Grid Node configuration file
+      ansible.builtin.template:
+        src: node_config.toml.j2
+        dest: /opt/selenium/node_config.toml
+      # notify: Restart Selenium Node
 
     - name: Download Google Chrome RPM
       ansible.builtin.get_url:
-        url: "{{ chrome_download_url }}"
-        dest: "/tmp/google-chrome.rpm"
+        url: '{{ chrome_download_url }}'
+        dest: '/tmp/google-chrome.rpm'
         mode: '0644'
-    
+
     - name: Install Google Chrome
       ansible.builtin.dnf:
-        name: "/tmp/google-chrome.rpm"
+        name: '/tmp/google-chrome.rpm'
         state: present
         disable_gpg_check: yes
 
@@ -83,61 +116,53 @@
       ansible.builtin.shell: google-chrome --version | awk '{print $3}'
       register: chrome_version_installed
       changed_when: false
-    
+
     - name: debug chrome version
       ansible.builtin.debug:
         msg:
-          - "Chrome is: {{ chrome_version_installed.stdout}}"
-    
-    # - name: Get ChromeDriver latest version
-    #   ansible.builtin.uri:
-    #     url: "{{ chromedriver_base_url }}/LATEST_RELEASE"
-    #     return_content: yes
-    #   register: chromedriver_version
-    #   changed_when: false
+          - 'Chrome is: {{ chrome_version_installed.stdout}}'
 
     - name: Download ChromeDriver
       ansible.builtin.get_url:
-        url: "{{ chromedriver_base_url }}/{{ chrome_version_installed.stdout }}/linux64/chromedriver-linux64.zip"
-        dest: "/tmp/chromedriver.zip"
+        url: '{{ chromedriver_base_url }}/{{ chrome_version_installed.stdout }}/linux64/chromedriver-linux64.zip'
+        dest: '/tmp/chromedriver.zip'
         mode: '0644'
 
     - name: Unzip ChromeDriver
       ansible.builtin.unarchive:
-        src: "/tmp/chromedriver.zip"
-        dest: "/tmp"
+        src: '/tmp/chromedriver.zip'
+        dest: '/tmp'
         remote_src: yes
-        creates: "/tmp/chromedriver-linux64"
-    
+        creates: '/tmp/chromedriver-linux64'
+
     - name: Copy Chromedriver to bin
       ansible.builtin.command: cp /tmp/chromedriver-linux64/chromedriver /usr/bin/
       changed_when: false
-    
+
     - name: Set ChromeDriver Permissions
       ansible.builtin.file:
-        path: "/usr/bin/chromedriver"
+        path: '/usr/bin/chromedriver'
         mode: '0755'
         owner: root
         group: root
-    
 
     - name: My Path
       ansible.builtin.debug:
-        msg: "{{ ansible_env.PATH.split(':')}}"  
+        msg: "{{ ansible_env.PATH.split(':')}}"
 
     - name: Verify ChromeDriver Installation
       ansible.builtin.shell: chromedriver --version | awk '{print $2}'
       register: chromedriver_version_check
       changed_when: false
-    
+
     - name: Install Details
       ansible.builtin.debug:
         msg:
-          - "Chrome version: {{ chrome_version_installed.stdout }}"
-          - "Chromedriver version: {{ chromedriver_version_check.stdout }}"
+          - 'Chrome version: {{ chrome_version_installed.stdout }}'
+          - 'Chromedriver version: {{ chromedriver_version_check.stdout }}'
 
     - name: Create selenium node service
-      copy: 
+      copy:
         dest: /etc/systemd/system/selenium-node.service
         content: |
           [Unit]
@@ -145,11 +170,14 @@
           After=network.target
 
           [Service]
-          ExecStart=/usr/bin/java -Dwebdriver.chrome.logfile=/var/log/chromedriver.log -Dwebdriver.chrome.verboseLogging=true  -jar /opt/selenium-server.jar node --hub http://{{ hostvars['hub']['ansible_host'] }}:4444
+          User=selenium
+          ExecStart=/usr/bin/java -Dwebdriver.chrome.logfile=/var/log/selenium/chromedriver.log -Dwebdriver.chrome.verboseLogging=true -jar /opt/selenium/selenium-server.jar node --config /opt/selenium/node_config.toml
+          StandardOutput=file:/var/log/selenium/hub.log
+          StandardError=file:/var/log/selenium/hub.error.log
 
           [Install]
           WantedBy=multi-user.target
-    
+
     - name: Enable and start Selenium service
       systemd:
         name: selenium-node
@@ -159,8 +187,8 @@
   post_tasks:
     - name: Clean up downloaded
       ansible.builtin.file:
-        path: "{{ item }}"
+        path: '{{ item }}'
         state: absent
       loop:
-        - "/tmp/google-chrome.rpm"
-        - "/tmp/chromedriver.zip"
+        - '/tmp/google-chrome.rpm'
+        - '/tmp/chromedriver.zip'
