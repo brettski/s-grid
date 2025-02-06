@@ -1,0 +1,12 @@
+[Unit]
+Description=Selenium Node service
+After=network.target
+
+[Service]
+User=selenium
+ExecStart=/usr/bin/java -Dwebdriver.chrome.logfile=/var/log/selenium/chromedriver.log -Dwebdriver.chrome.verboseLogging=true -jar /opt/selenium/selenium-server.jar node --config /opt/selenium/node_config.toml
+StandardOutput=file:/var/log/selenium/hub.log
+StandardError=file:/var/log/selenium/hub.error.log
+
+[Install]
+WantedBy=multi-user.target

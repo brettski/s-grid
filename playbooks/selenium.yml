@@ -55,22 +55,30 @@
 - hosts: hubs
   become: true
   tasks:
-    - name: Create selenium hub service
-      copy:
+    - name: Create Selenium Hub service
+      ansible.builtin.template:
+        src: selenium-hub.service.j2
         dest: /etc/systemd/system/selenium-hub.service
-        content: |
-          [Unit]
-          Description=Selenium Hub service
-          After=network.target
+        owner: root
+        group: root
+        mode: '0644'
 
-          [Service]
-          User=selenium
-          ExecStart=/usr/bin/java -jar /opt/selenium/selenium-server.jar hub
-          StandardOutput=file:/var/log/selenium/hub.log
-          StandardError=file:/var/log/selenium/hub.error.log
+    # - name: Create selenium hub service
+    #   copy:
+    #     dest: /etc/systemd/system/selenium-hub.service
+    #     content: |
+    #       [Unit]
+    #       Description=Selenium Hub service
+    #       After=network.target
 
-          [Install]
-          WantedBy=multi-user.target
+    #       [Service]
+    #       User=selenium
+    #       ExecStart=/usr/bin/java -jar /opt/selenium/selenium-server.jar hub
+    #       StandardOutput=file:/var/log/selenium/hub.log
+    #       StandardError=file:/var/log/selenium/hub.error.log
+
+    #       [Install]
+    #       WantedBy=multi-user.target
 
     - name: Enable and start Selenium service
       systemd:
@@ -161,22 +169,30 @@
           - 'Chrome version: {{ chrome_version_installed.stdout }}'
           - 'Chromedriver version: {{ chromedriver_version_check.stdout }}'
 
-    - name: Create selenium node service
-      copy:
+    - name: Create Selenium Node service
+      ansible.builtin.template:
+        src: selenium-node.service.j2
         dest: /etc/systemd/system/selenium-node.service
-        content: |
-          [Unit]
-          Description=Selenium Node service
-          After=network.target
+        owner: root
+        group: root
+        mode: '0644'
 
-          [Service]
-          User=selenium
-          ExecStart=/usr/bin/java -Dwebdriver.chrome.logfile=/var/log/selenium/chromedriver.log -Dwebdriver.chrome.verboseLogging=true -jar /opt/selenium/selenium-server.jar node --config /opt/selenium/node_config.toml
-          StandardOutput=file:/var/log/selenium/hub.log
-          StandardError=file:/var/log/selenium/hub.error.log
+    # - name: Create selenium node service
+    #   copy:
+    #     dest: /etc/systemd/system/selenium-node.service
+    #     content: |
+    #       [Unit]
+    #       Description=Selenium Node service
+    #       After=network.target
 
-          [Install]
-          WantedBy=multi-user.target
+    #       [Service]
+    #       User=selenium
+    #       ExecStart=/usr/bin/java -Dwebdriver.chrome.logfile=/var/log/selenium/chromedriver.log -Dwebdriver.chrome.verboseLogging=true -jar /opt/selenium/selenium-server.jar node --config /opt/selenium/node_config.toml
+    #       StandardOutput=file:/var/log/selenium/hub.log
+    #       StandardError=file:/var/log/selenium/hub.error.log
+
+    #       [Install]
+    #       WantedBy=multi-user.target
 
     - name: Enable and start Selenium service
       systemd:
