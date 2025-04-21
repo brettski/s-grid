@@ -63,22 +63,10 @@
         group: root
         mode: '0644'
 
-    # - name: Create selenium hub service
-    #   copy:
-    #     dest: /etc/systemd/system/selenium-hub.service
-    #     content: |
-    #       [Unit]
-    #       Description=Selenium Hub service
-    #       After=network.target
-
-    #       [Service]
-    #       User=selenium
-    #       ExecStart=/usr/bin/java -jar /opt/selenium/selenium-server.jar hub
-    #       StandardOutput=file:/var/log/selenium/hub.log
-    #       StandardError=file:/var/log/selenium/hub.error.log
-
-    #       [Install]
-    #       WantedBy=multi-user.target
+    - name: Create Selenium Grid Hub configuration file
+      ansible.builtin.template:
+        src: hub_config.toml.j2
+        dest: /opt/selenium/hub_config.toml
 
     - name: Enable and start Selenium service
       systemd:
@@ -176,23 +164,6 @@
         owner: root
         group: root
         mode: '0644'
-
-    # - name: Create selenium node service
-    #   copy:
-    #     dest: /etc/systemd/system/selenium-node.service
-    #     content: |
-    #       [Unit]
-    #       Description=Selenium Node service
-    #       After=network.target
-
-    #       [Service]
-    #       User=selenium
-    #       ExecStart=/usr/bin/java -Dwebdriver.chrome.logfile=/var/log/selenium/chromedriver.log -Dwebdriver.chrome.verboseLogging=true -jar /opt/selenium/selenium-server.jar node --config /opt/selenium/node_config.toml
-    #       StandardOutput=file:/var/log/selenium/hub.log
-    #       StandardError=file:/var/log/selenium/hub.error.log
-
-    #       [Install]
-    #       WantedBy=multi-user.target
 
     - name: Enable and start Selenium service
       systemd:

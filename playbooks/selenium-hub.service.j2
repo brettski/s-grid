@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 User=selenium
-ExecStart=/usr/bin/java -jar /opt/selenium/selenium-server.jar hub
+ExecStart=/usr/bin/java -jar /opt/selenium/selenium-server.jar hub --config /opt/selenium/hub_config.toml
 StandardOutput=file:/var/log/selenium/hub.log
 StandardError=file:/var/log/selenium/hub.error.log
 
