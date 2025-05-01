@@ -9,7 +9,7 @@ async function run() {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36';
 
   const options = new chrome.Options();
-  options.addArguments(`user-agent=${agentString}`);
+  options.addArguments(`--user-agent=${agentString}`);
 
   options.addArguments('--no-sandbox');
   options.addArguments('--disable-dev-shm-usage');

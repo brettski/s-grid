@@ -1,7 +1,7 @@
 - hosts: all
   become: true
   vars:
-    server_file_hash: 72975a0c09135efb1f14262a05ab570dfd9c9c345840a37702c580941350ed0d
+    server_file_hash: a6b5ac19678e2f24b9a37e3f6bd6fbdf52077dc2cdbe66739ee9ee2fc7f08f39
   tasks:
     - name: Install Java 21
       yum:
@@ -31,9 +31,9 @@
         state: directory
         mode: '0755'
 
-    - name: Download selenium server 4.28.1
+    - name: Download selenium server 4.31.0
       ansible.builtin.get_url:
-        url: https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.28.0/selenium-server-4.28.1.jar
+        url: https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.31.0/selenium-server-4.31.0.jar
         dest: /opt/selenium/selenium-server.jar
         force: true
         mode: '0644'
